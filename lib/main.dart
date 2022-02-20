@@ -1,5 +1,6 @@
+import 'package:delivery_trainer/bloc/speech_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,7 +26,10 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: BlocProvider(
+        create: (context) => SpeechBloc(),
+        child: const MyHomePage(title: 'Flutter Demo Home Page'),
+      ),
     );
   }
 }
@@ -51,9 +55,18 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  final flutterTts = FlutterTts();
+  List<String> segments = [
+    "Delta Echo Papa India Mike",
+    "Nuremberg Tower",
+    "Hello",
+    "Cleared Echo Delta Delta Sierra",
+    "INPUD 7 November",
+    "Climb SID Flight Level 7 0",
+    "Flight Planned Route",
+    "Squawk 7 7 3 4",
+  ];
 
-  void _incrementCounter() {
+  void _incrementCounter(BuildContext context) {
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
@@ -63,8 +76,13 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
 
-    flutterTts.speak(
-        "Delta Echo Papa India Mike, Nuremberg Tower, Hello, Cleared Echo Delta Delta Sierra, INPUD 7 November, Climb SID Flight Level 7 0, Flight Planned Route, Squawk 7 7 3 4");
+    if (_counter == 1) {
+      BlocProvider.of<SpeechBloc>(context).initialize(segments);
+    }
+
+    if (_counter == 2) {
+      BlocProvider.of<SpeechBloc>(context).start();
+    }
   }
 
   @override
@@ -112,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () => _incrementCounter(context),
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
