@@ -8,72 +8,57 @@ part 'speech_state.dart';
 class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
   final flutterTts = FlutterTts();
 
-  SpeechBloc()
-      : super(
-            SpeechText(segments: const [], currentSegment: 0, playing: false)) {
+  List<String> segments = [];
+  int currentSegment = 0;
+  bool playing = false;
+
+  SpeechBloc() : super(SpeechStopped()) {
     // the line below is needed as otherwise the plugin will crash and also not
     // call any completion handlers
     flutterTts.awaitSpeakCompletion(true);
 
     flutterTts.setCompletionHandler(advance);
 
-    on<Initialized>((event, emit) {
-      emit(SpeechText(
-          segments: event.newSegments, currentSegment: 0, playing: false));
-    });
-
-    on<Advanced>((event, emit) {
-      final currentState = state as SpeechText;
-
-      emit(currentState.copy(
-          currentSegment: currentState.currentSegment + 1, playing: true));
-    });
+    segments = [];
+    currentSegment = 0;
+    playing = false;
 
     on<Started>((event, emit) {
-      final currentState = state as SpeechText;
-
-      emit(currentState.copy(playing: true));
+      emit(SpeechStopped());
     });
 
     on<Stopped>((event, emit) {
-      final currentState = state as SpeechText;
-
-      emit(currentState.copy(playing: false));
+      emit(SpeechPlaying());
     });
   }
 
   void _playSegment(int segment) {
     flutterTts.stop();
 
-    final currentState = state as SpeechText;
-
-    if (segment >= currentState.segments.length) {
+    if (segment >= segments.length) {
       return;
     }
 
-    flutterTts.speak(currentState.segments[segment]);
+    flutterTts.speak(segments[segment]);
+    currentSegment = segment;
+
+    add(Started());
   }
 
   void initialize(List<String> segments) {
-    final currentState = state as SpeechText;
-
-    if (currentState.playing) {
+    if (playing) {
       stop();
     }
-
-    add(Initialized(newSegments: segments));
+    currentSegment = 0;
+    this.segments = segments;
   }
 
   void start() {
-    final currentState = state as SpeechText;
-
-    if (currentState.playing) {
+    if (playing) {
       return;
     }
 
     _playSegment(0);
-
-    add(Started());
   }
 
   void stop() {
@@ -82,11 +67,8 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
   }
 
   void advance() {
-    final currentState = state as SpeechText;
-
-    if (currentState.currentSegment - 1 < currentState.segments.length) {
-      _playSegment(currentState.currentSegment + 1);
-      add(Advanced());
+    if (currentSegment - 1 < segments.length) {
+      _playSegment(currentSegment + 1);
     }
   }
 }
