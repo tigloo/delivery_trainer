@@ -68,7 +68,7 @@ class DepartureListBloc extends Bloc<DepartureListEvent, DepartureListState> {
     '2353',
   ];
 
-  final Random _random = Random.secure();
+  final Random _random = Random();
 
   DepartureListBloc()
       : super(
@@ -78,7 +78,8 @@ class DepartureListBloc extends Bloc<DepartureListEvent, DepartureListState> {
       // and publish the state
       final currentState = state as CurrentDepartureList;
 
-      List<Departure> updatedList = currentState.departures;
+      List<Departure> updatedList =
+          List.from(currentState.departures, growable: true);
 
       if (currentState.currentDeparture >= 0 &&
           currentState.currentDeparture < currentState.departures.length) {
