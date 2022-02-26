@@ -55,6 +55,13 @@ class SpeakableString {
     'erl': 'erlangen',
   };
 
+  /// Contains a map of destinations with pronounciable names
+  static const Map<String, String> _destinationList = {
+    'eddm': 'Munich',
+    'eddf': 'Frankfurt',
+    'lszh': 'Zurich',
+  };
+
   static String _toNatoString(String input) {
     return input
         .toLowerCase()
@@ -109,6 +116,18 @@ class SpeakableString {
   /// Returns a [SpeakableString] for a squawk code
   static SpeakableString squawk({required String displayText}) {
     // just pronounce it in NATO alphabet
+    return natoizedString(displayText: displayText);
+  }
+
+  /// Returns a [SpeakableString] for an airport code
+  static SpeakableString airport({required String displayText}) {
+    if (_destinationList.keys.contains(displayText.toLowerCase())) {
+      return SpeakableString(
+          displayText: displayText,
+          speechText: _destinationList[displayText.toLowerCase()]!);
+    }
+
+    // if we don't have a name for the airport, just pronounce it as NATO
     return natoizedString(displayText: displayText);
   }
 
