@@ -124,8 +124,10 @@ class SpeakableString {
 
   /// Returns a [SpeakableString] for a squawk code
   static SpeakableString squawk({required String displayText}) {
-    // just pronounce it in NATO alphabet
-    return natoizedString(displayText: displayText);
+    // prefix with squawk and pronounce the rest in NATO alphabet
+    return SpeakableString(
+        displayText: displayText,
+        speechText: 'squawk ' + _toNatoString(displayText));
   }
 
   /// Returns a [SpeakableString] for an airport code
