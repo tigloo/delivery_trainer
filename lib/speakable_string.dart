@@ -42,6 +42,12 @@ class SpeakableString {
     '0': '0',
   };
 
+  /// Contains a map of callsign prefixes with airline names
+  static const Map<String, String> _airlineList = {
+    'dlh': 'Lufthansa',
+    'tui': 'Tui',
+  };
+
   /// Contains a map of route names with pronounciable names
   static const Map<String, String> _routeList = {
     'akanu': 'uhkahnoo',
@@ -86,11 +92,14 @@ class SpeakableString {
 
   /// Returns a [SpeakableString] for a callsign
   static SpeakableString callsign({required String displayText}) {
-    // LH == Lufthansa
-    if (displayText.toLowerCase().startsWith('lh')) {
-      return SpeakableString(
-          displayText: displayText,
-          speechText: 'lufthansa ' + _toNatoString(displayText.substring(2)));
+    for (final airline in _airlineList.keys) {
+      if (displayText.toLowerCase().startsWith(airline)) {
+        return SpeakableString(
+            displayText: displayText,
+            speechText: _airlineList[airline]! +
+                ' ' +
+                _toNatoString(displayText.substring(airline.length)));
+      }
     }
 
     // if we didn't use a special callsign, just speak the entire callsign
