@@ -60,6 +60,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool audioEnabled = true;
+  String currentClearanceText = '';
 
   void _toggleAudio() {
     setState(() {
@@ -77,8 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
       SpeakableString.airport(displayText: departure.destination),
       SpeakableString.route(displayText: departure.sid),
       SpeakableString.literal(displayText: 'flight planned route'),
-      SpeakableString.literal(
-          displayText: 'climb via sid flight level zero seven zero'),
+      SpeakableString.literal(displayText: 'Climb flight level 0 7 0'),
       SpeakableString.squawk(displayText: departure.squawk),
     ];
   }
@@ -101,96 +101,109 @@ class _MyHomePageState extends State<MyHomePage> {
       body: BlocBuilder<DepartureListBloc, DepartureListState>(
         builder: (context, depListState) {
           final departureListState = depListState as CurrentDepartureList;
-          return Row(
-            children: [
-              Expanded(
-                child: Column(),
-              ),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Table(
-                      border: TableBorder.all(),
-                      defaultVerticalAlignment:
-                          TableCellVerticalAlignment.middle,
-                      children: [
-                        ...departureListState.departures
-                            .map((departure) => TableRow(
-                                  decoration: departure ==
-                                          departureListState.departures[
-                                              departureListState
-                                                  .currentDeparture]
-                                      ? const BoxDecoration(color: Colors.grey)
-                                      : null,
-                                  children: [
-                                    Text(departure.callsign),
-                                    Text(departure.destination),
-                                    Text(departure.sid),
-                                    Text(departure.squawk),
-                                  ],
-                                ))
-                            .toList(),
+          return BlocBuilder<SpeechBloc, SpeechState>(
+            builder: (context, speechState) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: Column(),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Table(
+                          border: TableBorder.all(),
+                          defaultVerticalAlignment:
+                              TableCellVerticalAlignment.middle,
+                          children: [
+                            ...departureListState.departures
+                                .map((departure) => TableRow(
+                                      decoration: departure ==
+                                              departureListState.departures[
+                                                  departureListState
+                                                      .currentDeparture]
+                                          ? const BoxDecoration(
+                                              color: Colors.grey)
+                                          : null,
+                                      children: [
+                                        Text(departure.callsign),
+                                        Text(departure.destination),
+                                        Text(departure.sid),
+                                        Text(departure.squawk),
+                                      ],
+                                    ))
+                                .toList(),
+                          ],
+                        ),
+                        ButtonBar(
+                          alignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                              onPressed: _toggleAudio,
+                              child: Icon(
+                                  audioEnabled
+                                      ? Icons.speaker_notes
+                                      : Icons.speaker_notes_off,
+                                  color: Colors.white),
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(20),
+                                primary: Colors.blue, // <-- Button color
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                final speakable = departureToSpeakable(
+                                    departureListState.departures[
+                                        departureListState.currentDeparture]);
+
+                                currentClearanceText = speakable
+                                    .map((e) => e.displayText)
+                                    .toList()
+                                    .join(', ');
+
+                                BlocProvider.of<SpeechBloc>(context).initialize(
+                                    speakable
+                                        .map((e) => e.speechText)
+                                        .toList());
+
+                                if (audioEnabled) {
+                                  BlocProvider.of<SpeechBloc>(context).start();
+                                }
+                              },
+                              child: const Icon(Icons.play_arrow,
+                                  color: Colors.white),
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(20),
+                                primary: Colors.blue, // <-- Button color
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {},
+                              child: const Icon(Icons.arrow_forward,
+                                  color: Colors.white),
+                              style: ElevatedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(20),
+                                primary: Colors.blue, // <-- Button color
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(currentClearanceText),
                       ],
                     ),
-                    ButtonBar(
-                      alignment: MainAxisAlignment.center,
-                      children: [
-                        ElevatedButton(
-                          onPressed: _toggleAudio,
-                          child: Icon(
-                              audioEnabled
-                                  ? Icons.speaker_notes
-                                  : Icons.speaker_notes_off,
-                              color: Colors.white),
-                          style: ElevatedButton.styleFrom(
-                            shape: const CircleBorder(),
-                            padding: const EdgeInsets.all(20),
-                            primary: Colors.blue, // <-- Button color
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            final speakable = departureToSpeakable(
-                                departureListState.departures[
-                                    departureListState.currentDeparture]);
-
-                            BlocProvider.of<SpeechBloc>(context).initialize(
-                                speakable.map((e) => e.speechText).toList());
-
-                            if (audioEnabled) {
-                              BlocProvider.of<SpeechBloc>(context).start();
-                            }
-                          },
-                          child:
-                              const Icon(Icons.play_arrow, color: Colors.white),
-                          style: ElevatedButton.styleFrom(
-                            shape: const CircleBorder(),
-                            padding: const EdgeInsets.all(20),
-                            primary: Colors.blue, // <-- Button color
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: const Icon(Icons.arrow_forward,
-                              color: Colors.white),
-                          style: ElevatedButton.styleFrom(
-                            shape: const CircleBorder(),
-                            padding: const EdgeInsets.all(20),
-                            primary: Colors.blue, // <-- Button color
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(),
-              ),
-            ],
+                  ),
+                  Expanded(
+                    child: Column(),
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
