@@ -1,5 +1,7 @@
 import 'package:delivery_trainer/bloc/departurelist_bloc.dart';
 import 'package:delivery_trainer/bloc/speech_bloc.dart';
+import 'package:delivery_trainer/departure.dart';
+import 'package:delivery_trainer/speakable_string.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,7 +34,7 @@ class MyApp extends StatelessWidget {
           BlocProvider(create: (context) => SpeechBloc()),
           BlocProvider(create: (context) => DepartureListBloc()),
         ],
-        child: const MyHomePage(title: 'Flutter Demo Home Page'),
+        child: const MyHomePage(title: 'Delivery Trainer'),
       ),
     );
   }
@@ -57,36 +59,28 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  bool audioEnabled = true;
 
-  List<String> segments = [
-    "Delta Echo Papa India Mike",
-    "Nuremberg Tower",
-    "Hello",
-    "Cleared Echo Delta Delta Sierra",
-    "INPUD 7 November",
-    "Climb SID Flight Level 7 0",
-    "Flight Planned Route",
-    "Squawk 7 7 3 4",
-  ];
-
-  void _incrementCounter(BuildContext context) {
+  void _toggleAudio() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      audioEnabled = !audioEnabled;
     });
+  }
 
-    if (_counter == 1) {
-      BlocProvider.of<SpeechBloc>(context).initialize(segments);
-    }
-
-    if (_counter == 2) {
-      BlocProvider.of<SpeechBloc>(context).start();
-    }
+  List<SpeakableString> departureToSpeakable(Departure departure) {
+    return <SpeakableString>[
+      SpeakableString.callsign(displayText: departure.callsign),
+      SpeakableString.literal(displayText: 'Nuremberg Delivery'),
+      SpeakableString.literal(displayText: 'Information Alpha'),
+      SpeakableString.literal(displayText: 'Startup approved'),
+      SpeakableString.literal(displayText: 'cleared'),
+      SpeakableString.airport(displayText: departure.destination),
+      SpeakableString.route(displayText: departure.sid),
+      SpeakableString.literal(displayText: 'flight planned route'),
+      SpeakableString.literal(
+          displayText: 'climb via sid flight level zero seven zero'),
+      SpeakableString.squawk(displayText: departure.squawk),
+    ];
   }
 
   @override
@@ -107,42 +101,94 @@ class _MyHomePageState extends State<MyHomePage> {
       body: BlocBuilder<DepartureListBloc, DepartureListState>(
         builder: (context, depListState) {
           final departureListState = depListState as CurrentDepartureList;
-          return Center(
-            // Center is a layout widget. It takes a single child and positions it
-            // in the middle of the parent.
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Table(
-                  border: TableBorder.all(),
-                  defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                  children: departureListState.departures
-                      .map((departure) => TableRow(
-                            children: [
-                              Text(departure.callsign),
-                              Text(departure.destination),
-                              Text(departure.sid),
-                              Text(departure.squawk),
-                            ],
-                          ))
-                      .toList(),
+          return Row(
+            children: [
+              Expanded(
+                child: Column(),
+              ),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Table(
+                      border: TableBorder.all(),
+                      defaultVerticalAlignment:
+                          TableCellVerticalAlignment.middle,
+                      children: [
+                        ...departureListState.departures
+                            .map((departure) => TableRow(
+                                  decoration: departure ==
+                                          departureListState.departures[
+                                              departureListState
+                                                  .currentDeparture]
+                                      ? const BoxDecoration(color: Colors.grey)
+                                      : null,
+                                  children: [
+                                    Text(departure.callsign),
+                                    Text(departure.destination),
+                                    Text(departure.sid),
+                                    Text(departure.squawk),
+                                  ],
+                                ))
+                            .toList(),
+                      ],
+                    ),
+                    ButtonBar(
+                      alignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _toggleAudio,
+                          child: Icon(
+                              audioEnabled
+                                  ? Icons.speaker_notes
+                                  : Icons.speaker_notes_off,
+                              color: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(20),
+                            primary: Colors.blue, // <-- Button color
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            final speakable = departureToSpeakable(
+                                departureListState.departures[
+                                    departureListState.currentDeparture]);
+                            BlocProvider.of<SpeechBloc>(context).initialize(
+                                speakable.map((e) => e.speechText).toList());
+                            BlocProvider.of<SpeechBloc>(context).start();
+                          },
+                          child:
+                              const Icon(Icons.play_arrow, color: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(20),
+                            primary: Colors.blue, // <-- Button color
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: const Icon(Icons.arrow_forward,
+                              color: Colors.white),
+                          style: ElevatedButton.styleFrom(
+                            shape: const CircleBorder(),
+                            padding: const EdgeInsets.all(20),
+                            primary: Colors.blue, // <-- Button color
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const Text(
-                  'You have pushed the button this many times:',
-                ),
-                Text(
-                  '$_counter',
-                  style: Theme.of(context).textTheme.headline4,
-                ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: Column(),
+              ),
+            ],
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _incrementCounter(context),
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
