@@ -156,9 +156,13 @@ class _MyHomePageState extends State<MyHomePage> {
                             final speakable = departureToSpeakable(
                                 departureListState.departures[
                                     departureListState.currentDeparture]);
+
                             BlocProvider.of<SpeechBloc>(context).initialize(
                                 speakable.map((e) => e.speechText).toList());
-                            BlocProvider.of<SpeechBloc>(context).start();
+
+                            if (audioEnabled) {
+                              BlocProvider.of<SpeechBloc>(context).start();
+                            }
                           },
                           child:
                               const Icon(Icons.play_arrow, color: Colors.white),
