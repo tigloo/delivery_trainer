@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Delivery Trainer',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -74,12 +74,14 @@ class _MyHomePageState extends State<MyHomePage> {
       SpeakableString.literal(displayText: 'Nuremberg Delivery'),
       SpeakableString.literal(displayText: 'Information Alpha'),
       SpeakableString.literal(displayText: 'Startup approved'),
-      SpeakableString.literal(displayText: 'cleared'),
-      SpeakableString.airport(displayText: departure.destination),
+      SpeakableString.literal(displayText: 'cleared ') +
+          SpeakableString.airport(displayText: departure.destination),
       SpeakableString.route(displayText: departure.sid),
       SpeakableString.literal(displayText: 'flight planned route'),
-      SpeakableString.literal(displayText: 'Climb flight level 0 7 0'),
-      SpeakableString.squawk(displayText: departure.squawk),
+      SpeakableString.literal(displayText: 'Climb flight level ') +
+          SpeakableString.natoizedString(displayText: '070'),
+      SpeakableString.literal(displayText: 'squawk ') +
+          SpeakableString.squawk(displayText: departure.squawk),
     ];
   }
 
