@@ -107,4 +107,8 @@ class DepartureListBloc extends Bloc<DepartureListEvent, DepartureListState> {
       squawk: _squawks.randomElement(),
     );
   }
+
+  void clearCurrent() {
+    add(DepartureCleared());
+  }
 }

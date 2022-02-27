@@ -185,7 +185,12 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                             ),
                             ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                BlocProvider.of<SpeechBloc>(context)
+                                    .initialize([]);
+                                BlocProvider.of<DepartureListBloc>(context)
+                                    .clearCurrent();
+                              },
                               child: const Icon(Icons.arrow_forward,
                                   color: Colors.white),
                               style: ElevatedButton.styleFrom(

@@ -15,4 +15,7 @@ class CurrentDepartureList extends DepartureListState {
 
   const CurrentDepartureList(
       {required this.departures, required this.currentDeparture});
+
+  @override
+  List<Object> get props => [departures, currentDeparture];
 }
