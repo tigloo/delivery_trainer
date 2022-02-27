@@ -19,6 +19,9 @@ class SpeechBloc extends Bloc<SpeechEvent, SpeechState> {
 
     flutterTts.setCompletionHandler(advance);
 
+    // ensure we use US english, otherwise it will use the browser language
+    flutterTts.setLanguage("en-US");
+
     segments = [];
     currentSegment = 0;
     playing = false;
