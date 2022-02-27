@@ -1,16 +1,14 @@
-# delivery_trainer
+# Delivery Trainer
 
-A new Flutter project.
+A small project to show a departure list as outlined in Euroscope, then read the correct departure text. The departure is both shown in text and spoken via text-to-speech.
 
-## Getting Started
+## Deployment
 
-This project is a starting point for a Flutter application.
+The project can be deployed to GitHub pages via the following commands:
 
-A few resources to get you started if this is your first Flutter project:
+```
+flutter pub global run peanut --extra-args "--base-href=/delivery_trainer/"
+git push origin --set-upstream gh-pages
+```
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+It can then be launched in the browser [here](https://tigloo.github.io/delivery_trainer/).
